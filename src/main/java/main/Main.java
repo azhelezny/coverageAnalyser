@@ -1,5 +1,6 @@
 package main;
 
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -9,6 +10,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 
 
@@ -18,16 +20,39 @@ public class Main {
     static int disabledSamplers = 0;
 
     public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
+
+
+
+
+
+        File dir = new File("/Users/auvarov/IdeaProjects/splice/test-jmeter/src/test/jmeter");
+        FileFilter fileFilter = new WildcardFileFilter("*.jmx");
+        File[] files = dir.listFiles(fileFilter);
+        for (int i = 0; i < files.length; i++) {
+            //System.out.println(files[i]);
+            analyzeFile(files[i].getAbsolutePath());
+
+        }
+
+    }
+
+
+    public static void analyzeFile(String filepath) throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
-        Document doc = db.parse(new File("/Users/azhelezny/projects/splice_machine/test-jmeter/src/test/jmeter/poc-hartehanks.jmx"));
+
+        Document doc = db.parse(new File(filepath));
 
         findAllThreads(doc);
-
+        System.out.println("Filepath:" + filepath);
         System.out.println("Count: " + samplersCount);
         System.out.println("Disabled: " + disabledSamplers);
         System.out.println("Available Coverage: " + (100 - (disabledSamplers * 100) / samplersCount));
     }
+
+
+
+
 
     public static boolean isEnabled(Node node) {
         if (!node.hasAttributes())
