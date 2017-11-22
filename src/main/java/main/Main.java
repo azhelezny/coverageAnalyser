@@ -22,9 +22,6 @@ public class Main {
     public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
 
 
-
-
-
         File dir = new File("/Users/auvarov/IdeaProjects/splice/test-jmeter/src/test/jmeter");
         FileFilter fileFilter = new WildcardFileFilter("*.jmx");
         File[] files = dir.listFiles(fileFilter);
@@ -48,10 +45,9 @@ public class Main {
         System.out.println("Count: " + samplersCount);
         System.out.println("Disabled: " + disabledSamplers);
         System.out.println("Available Coverage: " + (100 - (disabledSamplers * 100) / samplersCount));
+        samplersCount = 0;
+        disabledSamplers = 0;
     }
-
-
-
 
 
     public static boolean isEnabled(Node node) {
