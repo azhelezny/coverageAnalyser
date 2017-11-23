@@ -41,25 +41,13 @@ public class Main {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
 
+        Document doc = db.parse(new File(filepath));
 
-        try {
-
-            File myFile = new File((filepath));
-            String fixedContent=replaceSelected("<?xml version=\"1.1\" encoding=\"UTF-8\"?>", "<\\?xml\\sversion=\"1.0\"\\sencoding=\"UTF-8\"\\?>", myFile).toString();
-            InputStream stream = new ByteArrayInputStream(fixedContent.getBytes(StandardCharsets.UTF_8.name()));
-
-            Document doc = db.parse(stream);
-
-            findAllThreads(doc);
-            System.out.println("Filepath:" + filepath);
-            System.out.println("Count: " + samplersCount);
-            System.out.println("Disabled: " + disabledSamplers);
-            //System.out.println("Available Coverage: " + (100 - (disabledSamplers * 100) / samplersCount));
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
+        findAllThreads(doc);
+        System.out.println("Filepath:" + filepath);
+        System.out.println("Count: " + samplersCount);
+        System.out.println("Disabled: " + disabledSamplers);
+        System.out.println("Available Coverage: " + (100 - (disabledSamplers * 100) / samplersCount));
         samplersCount = 0;
         disabledSamplers = 0;
     }
