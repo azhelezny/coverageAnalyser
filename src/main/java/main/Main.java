@@ -1,5 +1,6 @@
 package main;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -9,9 +10,11 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class Main {
@@ -38,13 +41,25 @@ public class Main {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
 
-        Document doc = db.parse(new File(filepath));
 
-        findAllThreads(doc);
-        System.out.println("Filepath:" + filepath);
-        System.out.println("Count: " + samplersCount);
-        System.out.println("Disabled: " + disabledSamplers);
-        System.out.println("Available Coverage: " + (100 - (disabledSamplers * 100) / samplersCount));
+        try {
+
+            File myFile = new File((filepath));
+            String fixedContent=replaceSelected("<?xml version=\"1.1\" encoding=\"UTF-8\"?>", "<\\?xml\\sversion=\"1.0\"\\sencoding=\"UTF-8\"\\?>", myFile).toString();
+            InputStream stream = new ByteArrayInputStream(fixedContent.getBytes(StandardCharsets.UTF_8.name()));
+
+            Document doc = db.parse(stream);
+
+            findAllThreads(doc);
+            System.out.println("Filepath:" + filepath);
+            System.out.println("Count: " + samplersCount);
+            System.out.println("Disabled: " + disabledSamplers);
+            //System.out.println("Available Coverage: " + (100 - (disabledSamplers * 100) / samplersCount));
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
         samplersCount = 0;
         disabledSamplers = 0;
     }
@@ -61,7 +76,7 @@ public class Main {
         NodeList list = node.getChildNodes();
         for (int i = 0; i < list.getLength(); i++) {
             Node currentNode = list.item(i);
-            if (currentNode.getNodeName().equals("ThreadGroup"))
+            if (currentNode.getNodeName().equals("ThreadGroup")||currentNode.getNodeName().equals("SetupThreadGroup"))
                 diveInto(currentNode.getNextSibling().getNextSibling(), isEnabled(currentNode));
             findAllThreads(currentNode);
         }
@@ -85,4 +100,29 @@ public class Main {
             }
         }
     }
+
+
+    public static StringBuilder replaceSelected(String replaceWith, String replaceWhat, File filepath) throws FileNotFoundException {
+
+        String targetStr = replaceWhat;
+        String altStr = replaceWith;
+        java.io.File file = filepath;
+        java.util.Scanner scanner = new java.util.Scanner(file);
+        StringBuilder buffer = new StringBuilder();
+
+
+       // if (scanner.hasNext()) buffer.append("\n");
+
+        while (scanner.hasNext()) {
+            buffer.append(scanner.nextLine().replaceAll(targetStr, altStr));
+            if (scanner.hasNext()) buffer.append("\n");
+        }
+        scanner.close();
+        return buffer;
+
+    }
 }
+
+
+
+
