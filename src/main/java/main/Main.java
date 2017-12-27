@@ -1,6 +1,7 @@
 package main;
 
 
+import org.apache.commons.cli.*;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -22,15 +23,37 @@ public class Main {
     static int disabledSamplers = 0;
 
     public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
+        Options options = new Options();
+        Option jmxFilePath = new Option("j", "jmxPath", true, "jmx file/directory path");
+        jmxFilePath.setRequired(true);
+        options.addOption(jmxFilePath);
 
+        CommandLineParser parser = new BasicParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd;
 
-        File dir = new File("/Users/auvarov/IdeaProjects/splice/test-jmeter/src/test/jmeter");
-        FileFilter fileFilter = new WildcardFileFilter("*.jmx");
-        File[] files = dir.listFiles(fileFilter);
-        for (File file : files) {
-            analyzeFile(file.getAbsolutePath());
+        try {
+            cmd = parser.parse(options, args);
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+            formatter.printHelp("JMX coverage analyser", options);
+            System.exit(1);
+            return;
         }
 
+        String path = cmd.getOptionValue("jmxPath");
+
+        File fileOrDir = new File(path);
+        if (fileOrDir.isFile()) {
+            analyzeFile(path);
+        } else {
+            FileFilter fileFilter = new WildcardFileFilter("*.jmx");
+            File[] files = fileOrDir.listFiles(fileFilter);
+            for (File file : files) {
+                analyzeFile(file.getAbsolutePath());
+                System.out.println();
+            }
+        }
     }
 
 
@@ -61,7 +84,7 @@ public class Main {
         NodeList list = node.getChildNodes();
         for (int i = 0; i < list.getLength(); i++) {
             Node currentNode = list.item(i);
-            if (currentNode.getNodeName().equals("ThreadGroup")||currentNode.getNodeName().equals("SetupThreadGroup"))
+            if (currentNode.getNodeName().equals("ThreadGroup") || currentNode.getNodeName().equals("SetupThreadGroup"))
                 diveInto(currentNode.getNextSibling().getNextSibling(), isEnabled(currentNode));
             findAllThreads(currentNode);
         }
@@ -96,7 +119,7 @@ public class Main {
         StringBuilder buffer = new StringBuilder();
 
 
-       // if (scanner.hasNext()) buffer.append("\n");
+        // if (scanner.hasNext()) buffer.append("\n");
 
         while (scanner.hasNext()) {
             buffer.append(scanner.nextLine().replaceAll(targetStr, altStr));
