@@ -10,11 +10,10 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 
 public class Main {
@@ -28,10 +27,8 @@ public class Main {
         File dir = new File("/Users/auvarov/IdeaProjects/splice/test-jmeter/src/test/jmeter");
         FileFilter fileFilter = new WildcardFileFilter("*.jmx");
         File[] files = dir.listFiles(fileFilter);
-        for (int i = 0; i < files.length; i++) {
-            //System.out.println(files[i]);
-            analyzeFile(files[i].getAbsolutePath());
-
+        for (File file : files) {
+            analyzeFile(file.getAbsolutePath());
         }
 
     }
